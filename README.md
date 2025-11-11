@@ -1,1 +1,1 @@
-# Temporal-Labirynth
+# Quantum-Painter
