@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUSION CORE | Термоядерный реактор</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+        
+        #reactorContainer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #interface {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .main-title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 20px #ff3333, 0 0 40px #00aaff;
+            letter-spacing: 8px;
+        }
+        
+        .subtitle {
+            font-size: 0.3em;
+            letter-spacing: 4px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+        
+        .reactor-stats {
+            position: absolute;
+            top: 120px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ff3333;
+            backdrop-filter: blur(10px);
+            width: 300px;
+        }
+        
+        .temperature {
+            font-size: 2.5em;
+            color: #ff3333;
+            text-shadow: 0 0 10px #ff3333;
+            font-weight: bold;
+        }
+        
+        .power-level {
+            font-size: 1.2em;
+            color: #00aaff;
+            margin-top: 10px;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            pointer-events: all;
+        }
+        
+        .fusion-btn {
+            background: rgba(255, 50, 50, 0.1);
+            border: 2px solid #ff3333;
+            color: #fff;
+            padding: 15px 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .fusion-btn:hover {
+            background: rgba(255, 50, 50, 0.3);
+            box-shadow: 0 0 25px #ff3333;
+            transform: translateY(-3px);
+        }
+        
+        .fusion-btn.blue {
+            border-color: #00aaff;
+            background: rgba(0, 170, 255, 0.1);
+        }
+        
+        .fusion-btn.blue:hover {
+            background: rgba(0, 170, 255, 0.3);
+            box-shadow: 0 0 25px #00aaff;
+        }
+        
+        .fusion-btn.green {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .fusion-btn.green:hover {
+            background: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 25px #00ff88;
+        }
+        
+        .reactor-indicators {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            text-align: right;
+        }
+        
+        .reactor-bar {
+            width: 200px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 5px 0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .reactor-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff3333, #00aaff);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .reactor-view {
+            position: absolute;
+            bottom: 120px;
+            right: 30px;
+            width: 200px;
+            height: 150px;
+            border: 2px solid #00aaff;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .warning {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: #ffaa00;
+            font-size: 12px;
+            text-shadow: 0 0 10px #ffaa00;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .plasma-display {
+            position: absolute;
+            top: 50%;
+            left: 30px;
+            transform: translateY(-50%);
+            font-size: 12px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: #ff3333;
+        }
+        
+        .status-grid {
+            position: absolute;
+            bottom: 120px;
+            left: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-value {
+            color: #00aaff;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 50, 50, 0.3);
+            border-top: 5px solid #ff3333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .advanced-controls {
+            position: absolute;
+            top: 120px;
+            right: 30px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #00aaff;
+            backdrop-filter: blur(10px);
+            pointer-events: all;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00aaff;
+            font-size: 0.9em;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00aaff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00aaff;
+        }
+        
+        .slider-value {
+            width: 40px;
+            text-align: right;
+            font-size: 0.9em;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #00aaff;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #00aaff;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: rgba(0, 170, 255, 0.3);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="loader"></div>
+        <div>ИНИЦИАЛИЗАЦИЯ РЕАКТОРА...</div>
+    </div>
+    
+    <div id="reactorContainer"></div>
+    
+    <div id="interface">
+        <div class="main-title">
+            FUSION CORE
+            <div class="subtitle">ТЕРМОЯДЕРНЫЙ РЕАКТОР АКТИВИРОВАН</div>
+        </div>
+        
+        <div class="reactor-stats">
+            <div>ТЕМПЕРАТУРА: <span class="temperature" id="temperatureValue">150М</span>°C</div>
+            <div class="power-level">МОЩНОСТЬ: <span id="powerLevel">78%</span></div>
+            <div>СТАБИЛЬНОСТЬ: <span id="stability">92%</span></div>
+            <div>МАГНИТНОЕ ПОЛЕ: <span id="magneticField">12.5Т</span></div>
+            <div>КОЭФФИЦИЕНТ Q: <span id="qFactor">1.25</span></div>
+            <div>ПЛОТНОСТЬ ПЛАЗМЫ: <span id="plasmaDensity">5.2e20</span> m⁻³</div>
+        </div>
+        
+        <div class="advanced-controls">
+            <h3>РАСШИРЕННЫЕ НАСТРОЙКИ</h3>
+            
+            <div class="control-group">
+                <div class="toggle-label">
+                    <span class="control-label">АНИМАЦИЯ ПЛАЗМЫ</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="plasmaAnimationToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">МОЩНОСТЬ НАГРЕВА: <span id="heatingPowerValue">78</span>%</label>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="78" class="slider" id="heatingPowerSlider">
+                    <span class="slider-value" id="heatingPowerDisplay">78%</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">СИЛА МАГНИТНОГО ПОЛЯ: <span id="fieldStrengthValue">12.5</span>Т</label>
+                <div class="slider-container">
+                    <input type="range" min="0" max="20" step="0.1" value="12.5" class="slider" id="fieldStrengthSlider">
+                    <span class="slider-value" id="fieldStrengthDisplay">12.5Т</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">ТЕМПЕРАТУРА ПЛАЗМЫ: <span id="plasmaTempValue">150</span>М°C</label>
+                <div class="slider-container">
+                    <input type="range" min="50" max="250" value="150" class="slider" id="plasmaTempSlider">
+                    <span class="slider-value" id="plasmaTempDisplay">150М</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">КОНЦЕНТРАЦИЯ ТОПЛИВА: <span id="fuelConcentrationValue">85</span>%</label>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="85" class="slider" id="fuelConcentrationSlider">
+                    <span class="slider-value" id="fuelConcentrationDisplay">85%</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">СКОРОСТЬ ИНЖЕКЦИИ: <span id="injectionRateValue">50</span>%</label>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="50" class="slider" id="injectionRateSlider">
+                    <span class="slider-value" id="injectionRateDisplay">50%</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="toggle-label">
+                    <span class="control-label">ОТОБРАЖАТЬ ЧАСТИЦЫ</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="particlesToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="toggle-label">
+                    <span class="control-label">МАГНИТНЫЕ СИЛОВЫЕ ЛИНИИ</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="fieldLinesToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="reactor-indicators">
+            <div>ЭНЕРГОВЫДЕЛЕНИЕ: <span id="energyOutput">64%</span></div>
+            <div class="reactor-bar">
+                <div class="reactor-fill" id="energyBar" style="width: 64%"></div>
+            </div>
+            <div>ДАВЛЕНИЕ ПЛАЗМЫ: <span id="plasmaPressure">36%</span></div>
+            <div class="reactor-bar">
+                <div class="reactor-fill" style="width: 36%; background: linear-gradient(90deg, #ff3333, #ffaa00)"></div>
+            </div>
+            <div>ИНДУКЦИЯ ТОКА: <span id="currentInduction">78%</span></div>
+            <div class="reactor-bar">
+                <div class="reactor-fill" style="width: 78%; background: linear-gradient(90deg, #00aaff, #00ff88)"></div>
+            </div>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-item">
+                <div>ТОКАМАК</div>
+                <div class="status-value" id="tokamakStatus">АКТИВЕН</div>
+            </div>
+            <div class="status-item">
+                <div>ОХЛАЖДЕНИЕ</div>
+                <div class="status-value" id="coolingStatus">НОРМА</div>
+            </div>
+            <div class="status-item">
+                <div>ТОПЛИВО</div>
+                <div class="status-value" id="fuelStatus">85%</div>
+            </div>
+            <div class="status-item">
+                <div>РЕАКЦИЯ</div>
+                <div class="status-value" id="reactionStatus">D-T СИНТЕЗ</div>
+            </div>
+            <div class="status-item">
+                <div>ВАКУУМ</div>
+                <div class="status-value" id="vacuumStatus">1.2e-5 Па</div>
+            </div>
+            <div class="status-item">
+                <div>НЕЙТРОНЫ</div>
+                <div class="status-value" id="neutronFlux">2.4e18</div>
+            </div>
+        </div>
+        
+        <div class="reactor-view" id="reactorView">
+            <!-- Мини-вид реактора -->
+        </div>
+        
+        <div class="plasma-display">
+            ▲ ПЛАЗМА АКТИВНА ▼
+        </div>
+        
+        <div class="control-panel">
+            <button class="fusion-btn" id="ignitePlasmaBtn">🔥 ЗАЖЕЧЬ ПЛАЗМУ</button>
+            <button class="fusion-btn blue" id="stabilizeFieldBtn">🌀 СТАБИЛИЗИРОВАТЬ ПОЛЕ</button>
+            <button class="fusion-btn" id="injectFuelBtn">⛽ ИНЖЕКТИРОВАТЬ ТОПЛИВО</button>
+            <button class="fusion-btn blue" id="boostPowerBtn">⚡ УВЕЛИЧИТЬ МОЩНОСТЬ</button>
+            <button class="fusion-btn green" id="optimizeBtn">🔧 ОПТИМИЗИРОВАТЬ</button>
+            <button class="fusion-btn" id="emergencyStopBtn">🛑 АВАРИЙНАЯ ОСТАНОВКА</button>
+        </div>
+        
+        <div class="warning" id="warningMessage">
+            ⚠️ ПРЕДУПРЕЖДЕНИЕ: ВЫСОКАЯ ТЕМПЕРАТУРА ПЛАЗМЫ
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
